@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../data/models/cart_item.dart';
 import '../data/models/model_produk.dart';
+import '../theme/app_theme.dart';
+import 'cart_page.dart';
 
 class DetailProductScreen extends StatefulWidget {
   final Product product;
-
   const DetailProductScreen({super.key, required this.product});
 
   @override
@@ -14,156 +16,291 @@ class DetailProductScreen extends StatefulWidget {
 class _DetailProductScreenState extends State<DetailProductScreen> {
   int quantity = 1;
   bool isFavorite = false;
-
-  String selectedVariant = 'Default';
+  String selectedVariant = 'Hitam';
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-
     return Scaffold(
-      backgroundColor: Colors.white,
-
-      // =========================================================
-      // BOTTOM ACTION
-      // =========================================================
       bottomNavigationBar: SafeArea(
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          decoration: const BoxDecoration(
             color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, -3),
-              ),
-            ],
+            border: Border(top: BorderSide(color: Color(0xFFE9ECF2))),
           ),
           child: Row(
             children: [
-              // Quantity
               Container(
-                height: 46,
+                height: 52,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(10),
+                  color: const Color(0xFFF3F4F8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [
                     IconButton(
                       onPressed: quantity > 1
-                          ? () {
-                              setState(() {
-                                quantity--;
-                              });
-                            }
+                          ? () => setState(() => quantity--)
                           : null,
-                      icon: const Icon(Icons.remove),
+                      icon: const Icon(Icons.remove_rounded, size: 19),
                     ),
-
                     Text(
                       '$quantity',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
-
                     IconButton(
-                      onPressed: () {
-                        setState(() {
-                          quantity++;
-                        });
-                      },
-                      icon: const Icon(Icons.add),
+                      onPressed: () => setState(() => quantity++),
+                      icon: const Icon(Icons.add_rounded, size: 19),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(width: 10),
-
-              // Keranjang
+              const SizedBox(width: 12),
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Produk ditambahkan ke keranjang'),
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CartPage(
+                        initialItem: CartItem(
+                          id: product.name.hashCode,
+                          nama: product.name,
+                          harga: product.price,
+                          gambar: product.image,
+                          jumlah: quantity,
+                        ),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.shopping_cart_outlined),
-                  label: const Text('Keranjang'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 46),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              // Beli
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Melanjutkan ke pembelian')),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(0, 46),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text('Beli'),
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  label: const Text('Tambah ke keranjang'),
                 ),
               ),
             ],
           ),
         ),
       ),
-
-      // =========================================================
-      // BODY
-      // =========================================================
       body: CustomScrollView(
         slivers: [
-          // =====================================================
-          // IMAGE + APP BAR
-          // =====================================================
           SliverAppBar(
-            expandedHeight: 330,
+            expandedHeight: 380,
             pinned: true,
-            elevation: 0,
-
             backgroundColor: Colors.white,
-
-            // Judul muncul ketika sudah scroll
-            title: const Text(
-              'Detail Produk',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            surfaceTintColor: Colors.white,
+            leading: Padding(
+              padding: const EdgeInsets.all(8),
+              child: IconButton.filled(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.ink,
+                ),
+              ),
             ),
-
-            // Transparan ketika berada di atas
+            actions: [
+              IconButton.filled(
+                onPressed: () => setState(() => isFavorite = !isFavorite),
+                icon: Icon(
+                  isFavorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: isFavorite ? Colors.red : AppTheme.ink,
+                ),
+              ),
+              const SizedBox(width: 6),
+              IconButton.filled(
+                onPressed: () => _message('Tautan produk siap dibagikan'),
+                icon: const Icon(Icons.share_outlined),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.ink,
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
             flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
+              background: Hero(
+                tag: product.image,
+                child: Image.network(
+                  product.image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const ColoredBox(
+                    color: Color(0xFFE9ECF2),
+                    child: Icon(Icons.image_not_supported_outlined, size: 50),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.canvas,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 38),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network(product.image, fit: BoxFit.cover),
-
-                  // Gradient supaya icon terlihat jelas
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withValues(alpha: 0.25),
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.05),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.secondary.withValues(alpha: .1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'STOK TERSEDIA',
+                          style: TextStyle(
+                            color: AppTheme.secondary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFB020),
+                        size: 19,
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        '4.8',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      const Text(
+                        '  (128)',
+                        style: TextStyle(
+                          color: Color(0xFF7C8495),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    product.name,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    Ui.rupiah(product.price),
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _InfoCard(
+                    children: const [
+                      _InfoRow(
+                        icon: Icons.local_shipping_outlined,
+                        title: 'Gratis ongkir',
+                        subtitle: 'Estimasi tiba 2–4 hari',
+                      ),
+                      Divider(height: 25),
+                      _InfoRow(
+                        icon: Icons.verified_user_outlined,
+                        title: 'Jaminan produk original',
+                        subtitle: 'Pengembalian mudah hingga 7 hari',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 26),
+                  Text(
+                    'Pilih varian',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 9,
+                    children: ['Hitam', 'Putih', 'Biru']
+                        .map(
+                          (variant) => ChoiceChip(
+                            label: Text(variant),
+                            selected: selectedVariant == variant,
+                            onSelected: (_) =>
+                                setState(() => selectedVariant = variant),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Deskripsi produk',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Produk berkualitas dengan material pilihan dan desain modern. Nyaman digunakan setiap hari, tahan lama, serta dilengkapi layanan purnajual dari toko terpercaya.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: const Color(0xFF667085),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Dijual oleh',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withValues(alpha: .1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.storefront_rounded,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Nava Official Store',
+                                  style: TextStyle(fontWeight: FontWeight.w800),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Aktif 5 menit lalu  •  Jakarta',
+                                  style: TextStyle(
+                                    color: Color(0xFF7C8495),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          OutlinedButton(
+                            onPressed: () {},
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(0, 42),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                            ),
+                            child: const Text('Kunjungi'),
+                          ),
                         ],
                       ),
                     ),
@@ -171,441 +308,56 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
                 ],
               ),
             ),
-
-            // Tombol di atas gambar
-            actions: [
-              _circleButton(
-                icon: Icons.shopping_cart_outlined,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Membuka keranjang')),
-                  );
-                },
-              ),
-
-              _circleButton(
-                icon: Icons.share_outlined,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Membagikan produk')),
-                  );
-                },
-              ),
-
-              const SizedBox(width: 8),
-            ],
-          ),
-
-          // =====================================================
-          // PRODUCT INFORMATION
-          // =====================================================
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nama + Favorite
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isFavorite = !isFavorite;
-                          });
-                        },
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Harga
-                  Text(
-                    formatRupiah(product.price),
-                    style: const TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Rating
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 20),
-                      const SizedBox(width: 5),
-                      const Text(
-                        '4.8',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '128 ulasan',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '• 350 terjual',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Divider(),
-
-                  const SizedBox(height: 18),
-
-                  // =================================================
-                  // DESKRIPSI
-                  // =================================================
-                  const Text(
-                    'Deskripsi Produk',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    'Produk berkualitas dengan bahan terbaik dan '
-                    'desain yang nyaman digunakan. Produk ini cocok '
-                    'digunakan untuk kebutuhan sehari-hari dan '
-                    'memiliki kualitas yang tahan lama.',
-                    style: TextStyle(
-                      fontSize: 15,
-                      height: 1.6,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // =================================================
-                  // VARIANT
-                  // =================================================
-                  const Text(
-                    'Varian',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _variantButton('Default'),
-                      _variantButton('Merah'),
-                      _variantButton('Hitam'),
-                      _variantButton('Putih'),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // =================================================
-                  // TOKO
-                  // =================================================
-                  const Text(
-                    'Toko',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        const CircleAvatar(
-                          radius: 28,
-                          backgroundImage: NetworkImage(
-                            'https://i.pravatar.cc/150?img=12',
-                          ),
-                        ),
-
-                        const SizedBox(width: 12),
-
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Toko Berkah Jaya',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Bekasi, Jawa Barat',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        OutlinedButton(
-                          onPressed: () {},
-                          child: const Text('Kunjungi'),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // =================================================
-                  // ULASAN
-                  // =================================================
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Ulasan Pembeli',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text('Lihat Semua'),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  _reviewItem(
-                    name: 'Ahmad',
-                    rating: 5,
-                    comment:
-                        'Barang bagus, sesuai dengan deskripsi. '
-                        'Pengiriman juga cepat.',
-                  ),
-
-                  _reviewItem(
-                    name: 'Siti',
-                    rating: 4,
-                    comment: 'Kualitas produknya bagus dan packing rapi.',
-                  ),
-
-                  _reviewItem(
-                    name: 'Budi',
-                    rating: 5,
-                    comment: 'Puas dengan produknya. Recommended!',
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // =================================================
-                  // PRODUK MIRIP
-                  // =================================================
-                  const Text(
-                    'Produk Mirip',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  SizedBox(
-                    height: 230,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
-                      itemBuilder: (context, index) {
-                        return _similarProductItem(
-                          image: product.image,
-                          name: 'Produk Mirip ${index + 1}',
-                          price: 75000 + (index * 10000),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Ruang tambahan karena bottom bar
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
           ),
         ],
       ),
     );
   }
 
-  // ===============================================================
-  // CIRCLE BUTTON APP BAR
-  // ===============================================================
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Material(
-        color: Colors.black.withValues(alpha: 0.35),
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Icon(icon, color: Colors.white, size: 21),
-          ),
-        ),
-      ),
-    );
-  }
+  void _message(String text) => ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(text), behavior: SnackBarBehavior.floating),
+  );
+}
 
-  // ===============================================================
-  // VARIANT BUTTON
-  // ===============================================================
-  Widget _variantButton(String variant) {
-    final selected = selectedVariant == variant;
+class _InfoCard extends StatelessWidget {
+  final List<Widget> children;
+  const _InfoCard({required this.children});
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: children),
+    ),
+  );
+}
 
-    return ChoiceChip(
-      label: Text(variant),
-      selected: selected,
-      onSelected: (_) {
-        setState(() {
-          selectedVariant = variant;
-        });
-      },
-    );
-  }
-
-  // ===============================================================
-  // REVIEW
-  // ===============================================================
-  Widget _reviewItem({
-    required String name,
-    required int rating,
-    required String comment,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(radius: 20, child: Text(name[0])),
-
-          const SizedBox(width: 10),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-
-                const SizedBox(height: 4),
-
-                Row(
-                  children: List.generate(
-                    rating,
-                    (index) =>
-                        const Icon(Icons.star, size: 16, color: Colors.orange),
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  comment,
-                  style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ===============================================================
-  // SIMILAR PRODUCT
-  // ===============================================================
-  Widget _similarProductItem({
-    required String image,
-    required String name,
-    required int price,
-  }) {
-    return SizedBox(
-      width: 145,
-      child: Card(
-        elevation: 1,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  const _InfoRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, color: AppTheme.primary),
+      const SizedBox(width: 13),
+      Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              image,
-              width: double.infinity,
-              height: 135,
-              fit: BoxFit.cover,
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  Text(
-                    formatRupiah(price),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Color(0xFF7C8495), fontSize: 12),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// ===============================================================
-// FORMAT RUPIAH
-// ===============================================================
-String formatRupiah(int price) {
-  final formatted = price.toString().replaceAllMapped(
-    RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-    (match) => '${match[1]}.',
+    ],
   );
-
-  return 'Rp $formatted';
 }

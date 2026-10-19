@@ -3,223 +3,306 @@ import 'package:flutter/material.dart';
 import '../data/dummy/dummy_kategori.dart';
 import '../data/dummy/dummy_produk.dart';
 import '../data/models/model_produk.dart';
+import '../theme/app_theme.dart';
 import '../widgets/my_app_bar.dart';
 import 'detail_product_screen.dart';
 
-// =========================
-// HOME PAGE
-// =========================
-
 class HomeScreen extends StatelessWidget {
-  HomeScreen({super.key});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MyAppBar(),
-
-      // =========================
-      // BODY
-      // =========================
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ================
-              // KATEGORI
-              // ================
-              Text(
-                'Kategori',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              SizedBox(height: 12),
-              SizedBox(
-                height: 115,
-                child: ListView.builder(
-                  // menentukan arah scroll
-                  scrollDirection: Axis.horizontal,
-                  // menentukan jumlah item
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize
-                            .min, // Menyesuaikan tinggi kolom dengan isinya
-                        children: [
-                          // Kotak Berbayang untuk Gambar
-                          Container(
-                            width: 80, // Tentukan lebar kotak
-                            height: 80, // Tentukan tinggi kotak
-                            decoration: BoxDecoration(
-                              color: Colors.white, // Warna latar belakang kotak
-                              borderRadius: BorderRadius.circular(
-                                16,
-                              ), // Membuat sudut kotak melengkung (radius)
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(
-                                    0.1,
-                                  ), // Warna bayangan tipis
-                                  blurRadius: 8, // Efek blur bayangan
-                                  offset: const Offset(
-                                    0,
-                                    4,
-                                  ), // Posisi bayangan (x, y)
-                                ),
-                              ],
-                            ),
-                            // Alignment.center memastikan gambar berada tepat di tengah kotak
-                            alignment: Alignment.center,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                12,
-                              ), // Opsional: radius untuk gambar jika diperlukan
-                              child: Image.network(
-                                category.image,
-                                width:
-                                    48, // Ukuran gambar lebih kecil dari Container agar tidak memenuhi kotak
-                                height:
-                                    48, // Ukuran gambar lebih kecil dari Container agar tidak memenuhi kotak
-                                fit: BoxFit
-                                    .contain, // Memastikan gambar proporsional di dalam area center
-                              ),
-                            ),
-                          ),
-
-                          // Jarak antara kotak gambar dan teks nama
-                          const SizedBox(height: 8),
-
-                          // Teks Nama Kategori di Bawah Kotak
-                          Text(
-                            category.name,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow
-                                .ellipsis, // Memotong teks dengan (...) jika terlalu panjang
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+      appBar: const MyAppBar(),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            sliver: SliverList.list(
+              children: [
+                Text(
+                  'Halo, Faheem 👋',
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
-              ),
-              // ================
-              // PRODUK TERBARU
-              // ================
-              SizedBox(height: 20),
-              Text(
-                'Produk Terbaru',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              SizedBox(height: 12),
-              GridView.builder(
-                shrinkWrap: true,
-                // physics: const NeverScrollableScrollPhysics(),
-                // menentukan jumlah item
-                itemCount: products.length,
-
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  // menentukan total kolom
-                  crossAxisCount: 2,
-                  // menentukan jarak samping horizontal
-                  crossAxisSpacing: 12,
-                  // menentukan jarak atas dan bawah
-                  mainAxisSpacing: 12,
-                  // menentukan rasio antar item
-                  // childAspectRatio: 0.68,
+                const SizedBox(height: 4),
+                Text(
+                  'Temukan pilihan terbaik untuk harimu.',
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
-
-                // untuk membuat konten tiam item
-                // index menyimpan posisi item
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  // masukkan produk ke dalam item sebagai argument
-                  return _productItemView(product, context);
-                },
-              ),
-            ],
+                const SizedBox(height: 22),
+                const _PromoBanner(),
+                const SizedBox(height: 28),
+                const _SectionHeader(title: 'Kategori', action: 'Lihat semua'),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 102,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => _CategoryItem(
+                      name: categories[index].name,
+                      image: categories[index].image,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 26),
+                const _SectionHeader(
+                  title: 'Produk pilihan',
+                  action: 'Terbaru',
+                ),
+                const SizedBox(height: 14),
+              ],
+            ),
           ),
-        ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 118),
+            sliver: SliverGrid.builder(
+              itemCount: products.length,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 240,
+                mainAxisExtent: 286,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+              ),
+              itemBuilder: (context, index) =>
+                  _ProductCard(product: products[index]),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  // =========================
-  // ITEM VIEW
-  // memiliki parameter product untuk menampung produk
-  // =========================
-  Widget _productItemView(Product product, BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
+class _PromoBanner extends StatelessWidget {
+  const _PromoBanner();
 
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              // pindah ke halaman detail dengan mengirimkan produk
-              builder: (context) => DetailProductScreen(product: product),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 156,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4C4CC7), Color(0xFF7474E7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -12,
+            bottom: -25,
+            child: Icon(
+              Icons.shopping_bag_rounded,
+              size: 132,
+              color: Colors.white.withValues(alpha: .13),
             ),
-          );
-        },
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'PROMO HARI INI',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: .8,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              const Text(
+                'Diskon hingga 40%',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 23,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Belanja makin hemat, hanya hari ini.',
+                style: TextStyle(color: Color(0xFFE8E8FF)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String action;
+  const _SectionHeader({required this.title, required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        Text(
+          action,
+          style: const TextStyle(
+            color: AppTheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryItem extends StatelessWidget {
+  final String name;
+  final String image;
+  const _CategoryItem({required this.name, required this.image});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 74,
+      child: Column(
+        children: [
+          Container(
+            width: 66,
+            height: 66,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE9ECF2)),
+            ),
+            child: Image.network(
+              image,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const Icon(Icons.category_outlined),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductCard extends StatelessWidget {
+  final Product product;
+  const _ProductCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailProductScreen(product: product),
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar produk
-            Expanded(
-              child: Image.network(
-                product.image,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            Stack(
+              children: [
+                SizedBox(
+                  height: 174,
+                  width: double.infinity,
+                  child: Image.network(
+                    product.image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const ColoredBox(
+                      color: Color(0xFFF0F1F5),
+                      child: Icon(Icons.image_not_supported_outlined),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: IconButton.filled(
+                    onPressed: () {},
+                    icon: const Icon(Icons.favorite_border_rounded, size: 18),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppTheme.ink,
+                      minimumSize: const Size(38, 38),
+                    ),
+                  ),
+                ),
+              ],
             ),
-
-            // Informasi produk
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(13),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     product.name,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                       fontSize: 15,
                     ),
                   ),
-
-                  const SizedBox(height: 6),
-
+                  const SizedBox(height: 8),
                   Text(
-                    'Rp ${product.price}',
+                    Ui.rupiah(product.price),
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primary,
                       fontSize: 16,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-
-                  const SizedBox(height: 6),
-
+                  const SizedBox(height: 8),
                   const Row(
                     children: [
-                      Icon(Icons.star, size: 16, color: Colors.orange),
+                      Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFB020),
+                        size: 17,
+                      ),
                       SizedBox(width: 4),
-                      Text('4.8'),
+                      Text(
+                        '4.8',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        '120 terjual',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF7C8495),
+                        ),
+                      ),
                     ],
                   ),
                 ],

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:mysample/pages/kalkulator_screen.dart';
-import 'package:mysample/widgets/product_grid.dart';
 
 import 'pages/feeds_sreen.dart';
 import 'pages/home_screen.dart';
@@ -9,7 +7,9 @@ import 'pages/login_screen.dart';
 import 'pages/mall_sreen.dart';
 import 'pages/profile_screen.dart';
 import 'pages/register_screen.dart';
+import 'pages/splash_screen.dart';
 import 'pages/transactions_screen.dart';
+import 'theme/app_theme.dart';
 
 /// Flutter code sample for [NavigationBar].
 
@@ -22,28 +22,16 @@ class NavigationBarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // Explicitly enable Material 3 (Optional for modern Flutter versions)
-        useMaterial3: true,
-        // Generate a full M3 ColorScheme from a single seed color
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
-        ),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
-      ),
+      title: 'Nava Shop',
+      theme: AppTheme.light(),
       // Halaman pertama yang dibuka
       // home: NavigationExample(),
       // route awal
-      initialRoute: '/login',
+      initialRoute: '/splash',
 
       // Daftar route
       routes: {
+        '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const NavigationExample(),
@@ -62,7 +50,7 @@ class NavigationExample extends StatefulWidget {
 class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
 
-  List<Widget> pages = [
+  final List<Widget> pages = const [
     HomeScreen(),
     FeedsScreen(),
     MallScreen(),
@@ -128,7 +116,11 @@ class _NavigationExampleState extends State<NavigationExample> {
             ),
             title: Column(
               children: [
-                Icon(Icons.waving_hand, size: 50, color: Colors.deepPurple),
+                Icon(
+                  Icons.waving_hand_rounded,
+                  size: 48,
+                  color: AppTheme.primary,
+                ),
                 const SizedBox(height: 10),
                 const Text('Selamat Datang!', textAlign: TextAlign.center),
               ],
@@ -156,7 +148,7 @@ class _NavigationExampleState extends State<NavigationExample> {
                 Container(
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.withValues(alpha: 0.1),
+                    color: AppTheme.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -203,6 +195,7 @@ class _NavigationExampleState extends State<NavigationExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           _handleScroll(notification);
@@ -212,9 +205,9 @@ class _NavigationExampleState extends State<NavigationExample> {
           children: [
             pages[currentPageIndex],
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: 12,
+              left: 14,
+              right: 14,
+              bottom: 10,
               child: AnimatedSlide(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
@@ -239,8 +232,9 @@ class _NavigationExampleState extends State<NavigationExample> {
 
   Widget _navBar() {
     return Material(
-      elevation: 10,
-      borderRadius: BorderRadius.circular(25),
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: .14),
+      borderRadius: BorderRadius.circular(24),
       clipBehavior: Clip.antiAlias,
       child: NavigationBar(
         // ketika menu diklik
@@ -250,36 +244,38 @@ class _NavigationExampleState extends State<NavigationExample> {
             currentPageIndex = selectedMenu;
           });
         },
-        indicatorColor: Theme.of(context).colorScheme.primary,
         // menunjukkan menu mana yang aktif
         selectedIndex: currentPageIndex,
         // kumpulan menu
         destinations: const <Widget>[
           // menu-menu di bawah
           NavigationDestination(
-            selectedIcon: Icon(Icons.home, color: Colors.white),
+            selectedIcon: Icon(Icons.home_rounded),
             icon: Icon(Icons.home_outlined),
-            label: 'Home',
+            label: 'Beranda',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.video_collection, color: Colors.white),
-            icon: Icon(Icons.video_collection_outlined),
+            selectedIcon: Icon(Icons.play_circle_fill_rounded),
+            icon: Icon(Icons.play_circle_outline_rounded),
             label: 'Feeds',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.store, color: Colors.white),
-            icon: Icon(Icons.store_outlined),
+            selectedIcon: Icon(Icons.storefront_rounded),
+            icon: Icon(Icons.storefront_outlined),
             label: 'Mall',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.list_alt, color: Colors.white),
-            icon: Badge(label: Text('2'), child: Icon(Icons.list_alt_outlined)),
-            label: 'Transactions',
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            icon: Badge(
+              label: Text('2'),
+              child: Icon(Icons.receipt_long_outlined),
+            ),
+            label: 'Transaksi',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.person, color: Colors.white),
-            icon: Icon(Icons.person_outlined),
-            label: 'Profile',
+            selectedIcon: Icon(Icons.person_rounded),
+            icon: Icon(Icons.person_outline_rounded),
+            label: 'Profil',
           ),
         ],
       ),

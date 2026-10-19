@@ -3,131 +3,122 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../theme/app_theme.dart';
+
 class ProductGrid extends StatefulWidget {
   const ProductGrid({super.key});
-
   @override
   State<ProductGrid> createState() => _ProductGridState();
 }
 
 class _ProductGridState extends State<ProductGrid> {
-  // variabel yang menampung data produk dari API
-  List products = [];
-
-  // request data ke API
-  // pakai Future karena data didapat nanti
-  // karena API membutuhkan waktu
-  // menggunakan void karena tidak mengembalikan nilai
-  // menggunakan async karena mengembalikan Future
-  Future<void> fetchProducts() async {
-    Uri url = Uri.parse('https://fakestoreapi.com/products');
-
-    // respon dari API dimasukkan ke variabel response
-    final response = await http.get(url);
-
-    // parsing JSON dan masukkan ke variable data
-    final data = jsonDecode(response.body);
-
-    // data yang sudah di parsing masuk ke variabel products
-    setState(() {
-      products = data;
-    });
-  }
+  List<dynamic> products = [];
+  String? error;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
-    // panggil fungsi fetchProducts
     fetchProducts();
+  }
+
+  Future<void> fetchProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://fakestoreapi.com/products'),
+      );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('Status ${response.statusCode}');
+      }
+      if (!mounted) {
+        return;
+      }
+      setState(() => products = jsonDecode(response.body) as List<dynamic>);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => error =
+              'Produk belum dapat dimuat. Periksa koneksi lalu coba lagi.',
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('data produk')),
-      body: products.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              // berapa jumlah data yang akan ditampilkan
-              itemCount: products.length, // semua produk
-              // buat tampilan tiap produk
-              itemBuilder: (context, index) {
+      appBar: AppBar(title: const Text('Produk API')),
+      body: error != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.cloud_off_outlined,
+                      size: 52,
+                      color: Color(0xFF98A0B1),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(error!, textAlign: TextAlign.center),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: () {
+                        setState(() => error = null);
+                        fetchProducts();
+                      },
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Coba lagi'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : products.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : GridView.builder(
+              padding: const EdgeInsets.all(20),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 280,
+                mainAxisExtent: 300,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+              ),
+              itemCount: products.length,
+              itemBuilder: (_, index) {
+                final item = products[index] as Map<String, dynamic>;
                 return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.grey.shade200),
-                  ),
+                  clipBehavior: Clip.antiAlias,
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Gambar produk
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            products[index]['image'],
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.contain,
+                        Expanded(
+                          child: Center(
+                            child: Image.network(
+                              item['image'] as String,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, _, _) => const Icon(
+                                Icons.image_not_supported_outlined,
+                              ),
+                            ),
                           ),
                         ),
-
-                        const SizedBox(width: 12),
-
-                        // Informasi produk
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                products[index]['title'],
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              Text(
-                                '\$${products[index]['price']}',
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              const SizedBox(height: 6),
-
-                              Row(
-                                children: [
-                                  Text(
-                                    '⭐ ${products[index]['rating']['rate']}',
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-
-                                  const SizedBox(width: 8),
-
-                                  Text(
-                                    '${products[index]['rating']['count']} ulasan',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        const SizedBox(height: 12),
+                        Text(
+                          item['title'] as String,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          '\$${item['price']}',
+                          style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],
